@@ -34,7 +34,7 @@ public class ProdutoController {
 
     @GetMapping("/novo")
     public String mostrarFormularioDeNovoProduto(Model model) {
-        ProdutoRequestDTO dto = new ProdutoRequestDTO();
+        ProdutoResponseDTO dto = new ProdutoResponseDTO();
         model.addAttribute("produtoDTO", dto);
         return "form-produto";
     }
@@ -56,6 +56,11 @@ public class ProdutoController {
                                    @ModelAttribute("produtoDTO") ProdutoRequestDTO dto) {
         produtoService.atualizarProduto(id, dto);
 
+        return "redirect:/produtos";
+    }
+    @GetMapping("/deletar/{id}")
+    public String deletarProduto(@PathVariable Long id) {
+        produtoService.deletarProduto(id);
         return "redirect:/produtos";
     }
 }

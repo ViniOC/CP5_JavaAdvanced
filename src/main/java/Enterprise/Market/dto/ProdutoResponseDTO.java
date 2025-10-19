@@ -2,10 +2,12 @@ package Enterprise.Market.dto;
 
 import Enterprise.Market.entity.Produto;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Data
+@NoArgsConstructor
 public class ProdutoResponseDTO {
     private Long id;
     private String nome;
