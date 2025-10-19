@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Produtos</title>
+</head>
+<body>
+
+<h1>Gestão de Produtos</h1>
+
+<p>
+    <a th:href="@{/produtos/novo}">+ Cadastrar Novo Produto</a>
+</p>
+<div th:unless="${listaDeProdutos.isEmpty()}">
+    <h2>Nossos Produtos</h2>
+    <table border="1">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Preço</th>
+            <th>Descrição</th>
+            <th>Estoque</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="produto : ${listaDeProdutos}">
+            <td><span th:text="${produto.id}">1</span></td>
+            <td><span th:text="${produto.nome}">Nome do Produto</span></td>
+
+            <td><span th:text="${#numbers.formatCurrency(produto.preco)}">R$ 9,99</span></td>
+
+            <td><span th:text="${produto.descricao}">Descrição...</span></td>
+            <td><span th:text="${produto.quantidadeEstoque}">10</span></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:if="${listaDeProdutos.isEmpty()}">
+    <p>Nenhum produto cadastrado ainda.</p>
+</div>
+
+</body>
+</html>
