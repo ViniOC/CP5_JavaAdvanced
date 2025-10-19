@@ -1,18 +1,22 @@
 <!DOCTYPE html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Bem-vindo</title>
-</head>
-<body>
-<h1>Bem-vindo ao Mercado Express</h1>
-<p>Esta é a nossa página inicial.</p>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<p>
-    <a th:href="@{/produtos}">Ver Produtos</a> (Exige login)
-</p>
-<p>
-    <a th:href="@{/login}">Fazer Login</a>
-</p>
+<head th:replace="~{fragments/common :: head(title='Bem-vindo')}"></head>
+
+<body>
+<nav th:insert="~{fragments/common :: navbar}"></nav>
+
+<main>
+    <h1>Bem-vindo ao Mercado Express</h1>
+    <p>Esta é a nossa página inicial.</p>
+
+    <p sec:authorize="!isAuthenticated()">
+        <a th:href="@{/login}" class="button">Fazer Login</a>
+    </p>
+    <p sec:authorize="isAuthenticated()">
+        <a th:href="@{/produtos}" class="button">Ver Produtos</a>
+    </p>
+</main>
 </body>
 </html>

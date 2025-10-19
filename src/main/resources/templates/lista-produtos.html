@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +10,18 @@
 
 <h1>Gestão de Produtos</h1>
 
-<p>
+<p sec:authorize="hasRole('ADMIN')">
     <a th:href="@{/produtos/novo}">+ Cadastrar Novo Produto</a>
 </p>
+
+<div sec:authorize="isAuthenticated()">
+    <form th:action="@{/logout}" method="post" style="display: inline;">
+        <button type="submit">Sair</button>
+    </form>
+</div>
+
+<hr/>
+
 <div th:unless="${listaDeProdutos.isEmpty()}">
     <h2>Nossos Produtos</h2>
     <table border="1">
@@ -22,7 +32,8 @@
             <th>Preço</th>
             <th>Descrição</th>
             <th>Estoque</th>
-            <th>Ações</th> </tr>
+            <th sec:authorize="hasRole('ADMIN')">Ações</th>
+        </tr>
         </thead>
         <tbody>
         <tr th:each="produto : ${listaDeProdutos}">
@@ -32,9 +43,8 @@
             <td><span th:text="${produto.descricao}">Descrição...</span></td>
             <td><span th:text="${produto.quantidadeEstoque}">10</span></td>
 
-            <td>
+            <td sec:authorize="hasRole('ADMIN')">
                 <a th:href="@{/produtos/editar/{id}(id=${produto.id})}">Editar</a>
-
                 <a th:href="@{/produtos/deletar/{id}(id=${produto.id})}"
                    onclick="return confirm('Tem certeza que deseja deletar este produto?');">
                     Deletar
