@@ -9,8 +9,9 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
 # Estágio 2: Criação da Imagem Final com JRE
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+# ...
 # Copia o JAR do estágio de build
 COPY --from=build /app/target/*.jar app.jar
 # Expõe a porta que o Spring usa (8081 no seu caso)
