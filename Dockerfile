@@ -9,7 +9,7 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
 # Estágio 2: Criação da Imagem Final com JRE
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 # Copia o JAR do estágio de build
 COPY --from=build /app/target/*.jar app.jar
