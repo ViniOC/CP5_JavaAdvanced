@@ -1,39 +1,41 @@
 <!DOCTYPE html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/common :: head(title='Login')}"></head>
+
 <body>
-<h1>Login - Mercado Express</h1>
+<nav th:insert="~{fragments/common :: navbar}"></nav>
 
-<div th:if="${param.error}" style="color: red;">
-    Usuário ou senha inválidos.
-</div>
+<main>
+    <h1>Login - Mercado Express</h1>
 
-<div th:if="${param.logout}" style="color: green;">
-    Você foi desconectado.
-</div>
-
-<div th:if="${param.success}" style="color: green;">
-    Cadastro realizado com sucesso! Faça o login.
-</div>
-
-<form th:action="@{/login}" method="post">
-    <div>
-        <label for="username">Usuário:</label>
-        <input type="text" id="username" name="username" required autofocus />
+    <div th:if="${param.error}" class="error-message">
+        Usuário ou senha inválidos.
     </div>
-    <div>
-        <label for="password">Senha:</label>
-        <input type="password" id="password" name="password" required />
+    <div th:if="${param.logout}" class="success-message">
+        Você foi desconectado.
     </div>
-    <div>
-        <button type="submit">Entrar</button>
+    <div th:if="${param.success}" class="success-message">
+        Cadastro realizado com sucesso! Faça o login.
     </div>
-</form>
 
-<hr/>
-<a th:href="@{/signup}">Não tem uma conta? Cadastre-se</a>
+    <form th:action="@{/login}" method="post">
+        <div>
+            <label for="username">Usuário:</label>
+            <input type="text" id="username" name="username" required autofocus />
+        </div>
+        <div>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password" required />
+        </div>
+        <div>
+            <button type="submit">Entrar</button>
+        </div>
+    </form>
+
+    <hr style="margin: 20px 0;"/>
+    <a th:href="@{/signup}">Não tem uma conta? Cadastre-se</a>
+</main>
 </body>
 </html>

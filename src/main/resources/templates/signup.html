@@ -1,27 +1,31 @@
 <!DOCTYPE html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Cadastro</title>
-</head>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/common :: head(title='Cadastro')}"></head>
+
 <body>
-<h1>Cadastre-se</h1>
+<nav th:insert="~{fragments/common :: navbar}"></nav>
 
-<form th:action="@{/signup}" th:object="${usuarioDTO}" method="post">
-    <div>
-        <label for="username">Usuário (login):</label>
-        <input type="text" id="username" th:field="*{username}" required />
-    </div>
-    <div>
-        <label for="password">Senha:</label>
-        <input type="password" id="password" th:field="*{password}" required />
-    </div>
-    <div>
-        <button type="submit">Cadastrar</button>
-    </div>
-</form>
+<main>
+    <h1>Cadastre-se</h1>
 
-<hr/>
-<a th:href="@{/login}">Já tem uma conta? Faça o login</a>
+    <form th:action="@{/signup}" th:object="${usuarioDTO}" method="post">
+        <div>
+            <label for="username">Usuário (login):</label>
+            <input type="text" id="username" th:field="*{username}" required />
+        </div>
+        <div>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" th:field="*{password}" required />
+        </div>
+        <div>
+            <button type="submit">Cadastrar</button>
+        </div>
+    </form>
+
+    <hr style="margin: 20px 0;"/>
+    <a th:href="@{/login}">Já tem uma conta? Faça o login</a>
+</main>
 </body>
 </html>

@@ -1,31 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Produtos</title>
-</head>
+
+<head th:replace="~{fragments/common :: head(title='Gestão de Produtos')}"></head>
+
 <body>
+<nav th:insert="~{fragments/common :: navbar}"></nav>
 
-<h1>Gestão de Produtos</h1>
+<main>
+    <h1>Gestão de Produtos</h1>
 
-<p sec:authorize="hasRole('ADMIN')">
-    <a th:href="@{/produtos/novo}">+ Cadastrar Novo Produto</a>
-</p>
+    <p sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/produtos/novo}" class="button">+ Cadastrar Novo Produto</a>
+    </p>
 
-<div sec:authorize="isAuthenticated()">
-    <form th:action="@{/logout}" method="post" style="display: inline;">
-        <button type="submit">Sair</button>
-    </form>
-</div>
-
-<hr/>
-
-<div th:unless="${listaDeProdutos.isEmpty()}">
-    <h2>Nossos Produtos</h2>
-    <table border="1">
-        <thead>
+    <div th:unless="${listaDeProdutos.isEmpty()}">
+        <h2>Nossos Produtos</h2>
+        <table> <thead>
         <tr>
             <th>ID</th>
             <th>Nome</th>
@@ -35,29 +26,28 @@
             <th sec:authorize="hasRole('ADMIN')">Ações</th>
         </tr>
         </thead>
-        <tbody>
-        <tr th:each="produto : ${listaDeProdutos}">
-            <td><span th:text="${produto.id}">1</span></td>
-            <td><span th:text="${produto.nome}">Nome do Produto</span></td>
-            <td><span th:text="${#numbers.formatCurrency(produto.preco)}">R$ 9,99</span></td>
-            <td><span th:text="${produto.descricao}">Descrição...</span></td>
-            <td><span th:text="${produto.quantidadeEstoque}">10</span></td>
+            <tbody>
+            <tr th:each="produto : ${listaDeProdutos}">
+                <td><span th:text="${produto.id}">1</span></td>
+                <td><span th:text="${produto.nome}">Nome</span></td>
+                <td><span th:text="${#numbers.formatCurrency(produto.preco)}">R$</span></td>
+                <td><span th:text="${produto.descricao}">...</span></td>
+                <td><span th:text="${produto.quantidadeEstoque}">0</span></td>
+                <td sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/produtos/editar/{id}(id=${produto.id})}">Editar</a> |
+                    <a th:href="@{/produtos/deletar/{id}(id=${produto.id})}"
+                       onclick="return confirm('Tem certeza?');">
+                        Deletar
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
-            <td sec:authorize="hasRole('ADMIN')">
-                <a th:href="@{/produtos/editar/{id}(id=${produto.id})}">Editar</a>
-                <a th:href="@{/produtos/deletar/{id}(id=${produto.id})}"
-                   onclick="return confirm('Tem certeza que deseja deletar este produto?');">
-                    Deletar
-                </a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
-
-<div th:if="${listaDeProdutos.isEmpty()}">
-    <p>Nenhum produto cadastrado ainda.</p>
-</div>
-
+    <div th:if="${listaDeProdutos.isEmpty()}">
+        <p>Nenhum produto cadastrado ainda.</p>
+    </div>
+</main>
 </body>
 </html>
