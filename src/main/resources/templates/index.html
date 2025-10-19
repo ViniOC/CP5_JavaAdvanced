@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bem-vindo</title>
+</head>
+<body>
+<h1>Bem-vindo ao Mercado Express</h1>
+<p>Esta é a nossa página inicial.</p>
+
+<p>
+    <a th:href="@{/produtos}">Ver Produtos</a> (Exige login)
+</p>
+<p>
+    <a th:href="@{/login}">Fazer Login</a>
+</p>
+</body>
+</html>

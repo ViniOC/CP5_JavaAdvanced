@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro</title>
+</head>
+<body>
+<h1>Cadastre-se</h1>
+
+<form th:action="@{/signup}" th:object="${usuarioDTO}" method="post">
+    <div>
+        <label for="username">Usuário (login):</label>
+        <input type="text" id="username" th:field="*{username}" required />
+    </div>
+    <div>
+        <label for="password">Senha:</label>
+        <input type="password" id="password" th:field="*{password}" required />
+    </div>
+    <div>
+        <button type="submit">Cadastrar</button>
+    </div>
+</form>
+
+<hr/>
+<a th:href="@{/login}">Já tem uma conta? Faça o login</a>
+</body>
+</html>
