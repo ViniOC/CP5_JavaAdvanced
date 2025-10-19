@@ -5,9 +5,13 @@
     <title>Formulário de Produto</title>
 </head>
 <body>
-<h1>Cadastrar Novo Produto</h1>
+<h1 th:text="${produtoDTO.id == null} ? 'Cadastrar Novo Produto' : 'Editar Produto'">
+    Formulário de Produto
+</h1>
 
-<form th:action="@{/produtos/novo}" th:object="${produtoDTO}" method="post">
+<form th:action="${produtoDTO.id == null} ? @{/produtos/novo} : @{/produtos/editar/{id}(id=${produtoDTO.id})}"
+      th:object="${produtoDTO}"
+      method="post">
     <div>
         <label for="nome">Nome:</label>
         <input type="text" id="nome" th:field="*{nome}" />
