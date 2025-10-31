@@ -1,0 +1,63 @@
+# Passo 04: Pipeline de Build (CI)
+
+trigger:
+- main # Dispara o CI após merge na main (Passo 07)
+
+pool:
+  vmImage: 'ubuntu-latest' # Agente para executar o build
+
+variables:
+  # O nome do seu projeto Java/ArtifactID
+  appName: 'Market'
+  # Substitua pelo nome do seu Azure Container Registry (ACR)
+  containerRegistry: 'seuregistry.azurecr.io'
+  imageRepository: 'market-app'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: 'Build e Testes'
+  jobs:
+  - job: Build
+    displayName: 'Executar Build e Publicar Imagem'
+    steps:
+    
+    # 1. Executa os testes unitários (Requisito: CI deve realizar testes)
+    - task: Maven@4
+      displayName: 'Executar Testes (JUnit)'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'test' # Executa os testes JUnit (MarketApplicationTests.java)
+    
+    # 2. Publica os resultados dos testes (Requisito: Mostrar resultado dos testes)
+    - task: PublishTestResults@2
+      displayName: 'Publicar Resultados dos Testes'
+      inputs:
+        testResultsFormat: 'JUnit'
+        [cite_start]testResultsFiles: '**/surefire-reports/TEST-*.xml' # Padrão Maven/JUnit 
+
+    # 3. Compila a aplicação para criar o JAR
+    - task: Maven@4
+      displayName: 'Empacotar JAR'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'package -DskipTests=true' # 'package' para gerar o JAR
+
+    # 4. (Opcional) Publica o JAR como artefato (se for usar App Service)
+    - publish: $(System.DefaultWorkingDirectory)/target/$(appName)-0.0.1-SNAPSHOT.jar
+      artifact: drop-jar
+
+    # 5. Constrói e Envia a Imagem Docker (Para implantação ACR/ACI)
+    - task: Docker@2
+      displayName: 'Build e Push da Imagem'
+      inputs:
+        containerRegistry: 'seu_service_connection_acr' # Crie uma 'Service Connection' antes
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath)'
+        tags: '$(tag)'
+        
+    # 6. Publica a imagem tag como artefato para ser consumida pelo CD (Release)
+    - publish: $(tag)
+      artifact: drop-image-tag
