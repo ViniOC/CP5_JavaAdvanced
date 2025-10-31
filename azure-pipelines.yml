@@ -8,23 +8,21 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest' # Agente de build padrão
 
-# Variáveis usadas em todo o pipeline
 variables:
-  # --- PREENCHA ESTAS VARIÁVEIS ---
   # 1. Nome do seu Azure Container Registry (ACR)
-  containerRegistry: 'acrmarketconexao.azurecr.io'
+  containerRegistry: 'acrmarketdimdim.azurecr.io' # PREENCHIDO
   
   # 2. Nome do seu App Service (criado no Portal Azure)
-  appServiceName: 'acrmarketdimdim'
+  appServiceName: 'app-marketdimdim-vinioc' # PREENCHIDO (use o nome que você criou)
   
   # 3. Nome do Grupo de Recursos onde o App Service está
-  resourceGroupName: 'acrmarketdimdim'
+  resourceGroupName: 'acmarketdimdim' # PREENCHIDO
   
-  # 4. Nome da Conexão de Serviço do tipo 'Docker Registry' (criada no DevOps)
-  serviceConnectionACR: 'acrmarketconexao'
+  # 4. Conexão de Serviço do tipo 'Docker Registry'
+  serviceConnectionACR: 'acrmarketconexao' # PREENCHIDO
   
-  # 5. Nome da Conexão de Serviço do tipo 'Azure Resource Manager' (criada no DevOps)
-  serviceConnectionARM: 'armmarketconexao'
+  # 5. Conexão de Serviço do tipo 'Azure Resource Manager'
+  serviceConnectionARM: 'armmarketconexao' # PREENCHIDO
 
   # --- Variáveis do Projeto (Geralmente não precisam ser alteradas) ---
   appName: 'Market' # Do seu pom.xml
