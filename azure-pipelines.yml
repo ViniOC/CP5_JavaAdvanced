@@ -1,63 +1,136 @@
-# Passo 04: Pipeline de Build (CI)
+# Pipeline de CI/CD para o Projeto Market (Java/Spring Boot/Docker)
+# Segue os Passos 04 (CI/Build) e 05 (CD/Release) do Checkpoint.
 
+# Passo 07: Gatilho automático para a branch 'main'
 trigger:
-- main # Dispara o CI após merge na main (Passo 07)
+- main
 
 pool:
-  vmImage: 'ubuntu-latest' # Agente para executar o build
+  vmImage: 'ubuntu-latest' # Agente de build padrão
 
+# Variáveis usadas em todo o pipeline
 variables:
-  # O nome do seu projeto Java/ArtifactID
-  appName: 'Market'
-  # Substitua pelo nome do seu Azure Container Registry (ACR)
-  containerRegistry: 'seuregistry.azurecr.io'
-  imageRepository: 'market-app'
+  # --- PREENCHA ESTAS VARIÁVEIS ---
+  # 1. Nome do seu Azure Container Registry (ACR)
+  containerRegistry: 'acrmarketconexao.azurecr.io'
+  
+  # 2. Nome do seu App Service (criado no Portal Azure)
+  appServiceName: 'acrmarketdimdim'
+  
+  # 3. Nome do Grupo de Recursos onde o App Service está
+  resourceGroupName: 'acrmarketdimdim'
+  
+  # 4. Nome da Conexão de Serviço do tipo 'Docker Registry' (criada no DevOps)
+  serviceConnectionACR: 'acrmarketconexao'
+  
+  # 5. Nome da Conexão de Serviço do tipo 'Azure Resource Manager' (criada no DevOps)
+  serviceConnectionARM: 'armmarketconexao'
+
+  # --- Variáveis do Projeto (Geralmente não precisam ser alteradas) ---
+  appName: 'Market' # Do seu pom.xml
+  imageRepository: 'market-app' # Nome da imagem no ACR
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
-  tag: '$(Build.BuildId)'
+  tag: '$(Build.BuildId)' # Usa o ID do Build como tag da imagem (boa prática)
 
 stages:
+# ----------------------------------------------------------------------
+# ESTÁGIO 01: BUILD (CI) - (Passo 04 do Checkpoint)
+# Responsável por testar, empacotar e criar a imagem Docker.
+# ----------------------------------------------------------------------
 - stage: Build
-  displayName: 'Build e Testes'
+  displayName: 'Stage: Build e Testes (CI)'
   jobs:
-  - job: Build
-    displayName: 'Executar Build e Publicar Imagem'
+  - job: BuildJob
+    displayName: 'Job: Executar Build, Testes e Publicar Imagem'
     steps:
     
     # 1. Executa os testes unitários (Requisito: CI deve realizar testes)
     - task: Maven@4
-      displayName: 'Executar Testes (JUnit)'
+      displayName: 'Passo 1: Executar Testes (JUnit)'
       inputs:
         mavenPomFile: 'pom.xml'
-        goals: 'test' # Executa os testes JUnit (MarketApplicationTests.java)
+        goals: 'test' # Executa os testes JUnit (ex: MarketApplicationTests.java)
     
     # 2. Publica os resultados dos testes (Requisito: Mostrar resultado dos testes)
     - task: PublishTestResults@2
-      displayName: 'Publicar Resultados dos Testes'
+      displayName: 'Passo 2: Publicar Resultados dos Testes'
       inputs:
         testResultsFormat: 'JUnit'
-        [cite_start]testResultsFiles: '**/surefire-reports/TEST-*.xml' # Padrão Maven/JUnit 
+        # CORREÇÃO: Removido o '[cite_start]' que causava o erro de sintaxe
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        mergeTestResults: true
 
     # 3. Compila a aplicação para criar o JAR
     - task: Maven@4
-      displayName: 'Empacotar JAR'
+      displayName: 'Passo 3: Empacotar JAR'
       inputs:
         mavenPomFile: 'pom.xml'
-        goals: 'package -DskipTests=true' # 'package' para gerar o JAR
+        goals: 'package -DskipTests=true' # 'package' para gerar o JAR (testes já rodaram)
 
-    # 4. (Opcional) Publica o JAR como artefato (se for usar App Service)
-    - publish: $(System.DefaultWorkingDirectory)/target/$(appName)-0.0.1-SNAPSHOT.jar
-      artifact: drop-jar
-
-    # 5. Constrói e Envia a Imagem Docker (Para implantação ACR/ACI)
+    # 4. Constrói e Envia a Imagem Docker para o ACR
     - task: Docker@2
-      displayName: 'Build e Push da Imagem'
+      displayName: 'Passo 4: Build e Push da Imagem Docker'
       inputs:
-        containerRegistry: 'seu_service_connection_acr' # Crie uma 'Service Connection' antes
+        # CORREÇÃO: Usa a variável da Conexão de Serviço (ACR)
+        containerRegistry: '$(serviceConnectionACR)' 
         repository: '$(imageRepository)'
         command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath)'
         tags: '$(tag)'
         
-    # 6. Publica a imagem tag como artefato para ser consumida pelo CD (Release)
-    - publish: $(tag)
-      artifact: drop-image-tag
+    # 5. Cria um artefato simples (arquivo de texto) contendo a TAG da imagem
+    # Isso é necessário para o Stage de Deploy saber qual tag (BuildId) ele deve implantar.
+    - task: Bash@3
+      displayName: 'Passo 5: Criar Artefato com a Tag da Imagem'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "$(tag)" > $(Build.ArtifactStagingDirectory)/imageTag.txt
+    
+    # 6. Publica o artefato (imageTag.txt)
+    - publish: $(Build.ArtifactStagingDirectory)/imageTag.txt
+      artifact: 'drop-image-tag'
+
+# ----------------------------------------------------------------------
+# ESTÁGIO 02: DEPLOY (CD) - (Passo 05 do Checkpoint)
+# Responsável por pegar a imagem do ACR e implantar no App Service.
+# ----------------------------------------------------------------------
+- stage: Deploy
+  displayName: 'Stage: Deploy (CD)'
+  dependsOn: Build # Só executa se o 'Build' for concluído com sucesso
+  condition: succeeded() # Garante que o 'Build' teve sucesso
+  jobs:
+  - deployment: DeployJob
+    displayName: 'Job: Deploy da Imagem no App Service'
+    environment: 'Producao' # Ambiente de deploy (pode criar em "Pipelines > Environments")
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          
+          # 1. Baixa o artefato (imageTag.txt) do stage de Build
+          - download: current
+            artifact: 'drop-image-tag'
+          
+          # 2. Lê o conteúdo do arquivo (a tag) e o armazena em uma variável
+          - task: Bash@3
+            displayName: 'Passo 1: Ler Tag do Artefato'
+            inputs:
+              targetType: 'inline'
+              script: |
+                IMAGE_TAG=$(cat $(Pipeline.Workspace)/drop-image-tag/imageTag.txt)
+                echo "Tag da imagem a ser implantada: $IMAGE_TAG"
+                # Cria uma variável (imageTag) para ser usada no próximo passo
+                echo "##vso[task.setvariable variable=imageTag;isOutput=true]$IMAGE_TAG"
+              name: "readTag" # Nome da task para referenciar a variável
+          
+          # 3. Deploy no Azure Web App for Containers
+          - task: AzureWebAppContainer@1
+            displayName: 'Passo 2: Deploy no Azure App Service'
+            inputs:
+              # CORREÇÃO: Usa as variáveis para as conexões e nomes
+              azureSubscription: '$(serviceConnectionARM)'
+              appName: '$(appServiceName)'
+              resourceGroupName: '$(resourceGroupName)'
+              # Imagem a ser implantada: "meuacr.azurecr.io/market-app:123"
+              imageName: '$(containerRegistry)/$(imageRepository):$(readTag.imageTag)' 
